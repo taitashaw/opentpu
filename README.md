@@ -1,4 +1,4 @@
-# openTPU on the AMD ZCU104
+# openTPU on AMD ZCU104
 
 A port of [openTPU](https://github.com/FeSens/openTPU), the open-source AI accelerator by
 Felipe Sens Bonetto, to AMD's ZCU104 evaluation board (Zynq UltraScale+ XCZU7EV), built in
