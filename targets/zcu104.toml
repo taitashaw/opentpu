@@ -1,0 +1,76 @@
+# The AMD ZCU104 evaluation board: Zynq UltraScale+ XCZU7EV-2FFVC1156 (four Cortex-A53, PL with
+# DSP48E2, block RAM and UltraRAM), a 64-bit DDR4 SODIMM on the PL side, no PCIe slot for a host.
+# The card's slice as it is (the YPCB-00338's release r2, m4): the same [arch], so the same
+# CFG_HASH and the same programs. What changes is the platform (docs/zcu104.md):
+#   - the memory is the PL SODIMM behind AMD's DDR4 controller (MIG, the board preset: DDR4-2133,
+#     64 bits, 17.06 GB/s, as the card's two DDR3-1066 channels' 17.1 GB/s), the slice's two
+#     channels interleaved on it beat by beat (otpu_mig_mux), so 128 bytes a core cycle at
+#     133.33 MHz is again the memory's peak;
+#   - the host is the PS's Arm cores: control registers on M_AXI_HPM0_FPD, host <-> card copies by
+#     an AXI CDMA between the PS DDR (S_AXI_HP0_FPD) and the card's DRAM (XDMA's role on the card).
+
+[target]
+name = "zcu104"
+kind = "fpga"
+platform_id = 3
+description = "ZCU104: xczu7ev, DDR4-2133 SODIMM (MIG), PS host over AXI; the card's r2 slice"
+variant = "m4"
+
+[arch]                          # the YPCB-00338's m4, field for field (one arch hash for both)
+S = 1
+D = 128
+MCOLS = 4
+ACT_BLOCKS = 128
+ACT_ROWS = 16
+TMEM_WORDS = 65536
+IMEM_WORDS = 32768
+DRAM_BYTES = 4294967296         # per slice: the 4 GiB SODIMM (2 GiB a channel, interleaved)
+LANES = 8
+PAIR = true
+DSTEP = true
+STREAM = true
+SEQ_WC = true
+
+[uarch]                         # the card's, except where the XCZU7EV's memories differ (zcu104.md)
+MXU_IMPL = 2
+MXU_CL = 16
+MXU_E = 4
+VPU_CL = 2
+ULANES = 8
+TMEM_IMPL = 3
+TMEM_NSB = 2
+TMEM_RPL = true
+TMEM_TDP = true
+TMEM_GST = true
+TMEM_PMP = 1
+RPB = 0
+WPB = 1
+WIN = 16
+FIFO_DEPTH = 1024
+TRACE_DEPTH = 16384
+PQ_WIN = 1024
+CHASH = true
+
+[tech]
+family = "xilinxus"             # rtl/tech/xilinxus: DSP48E2 cells
+part = "xczu7ev-ffvc1156-2-e"
+board_part = "xilinx.com:zcu104:part0:1.1"
+vendor = "xilinx"
+
+[platform]
+board = "zcu104"
+core_mhz = 133.33               # 128 B a cycle = the SODIMM's 17.06 GB/s (DDR4-2133 x 64 bits)
+mem = "ddr4"
+mem_mts = 2133
+mem_ctrl = "mig"                # AMD's DDR4 IP, calibrated by its own MicroBlaze: no host calibration
+hostcal = false
+channels_per_slice = 2          # otpu_native_dram's two, both on the one SODIMM (otpu_mig_mux)
+channel_bytes = 2147483648
+channel_phys_bytes = 4294967296 # the board preset's MTA8ATF51264HZ-2G1, 4 GiB
+beat_bytes = 64
+host = "axi"                    # the PS (M_AXI_HPM0_FPD, AXI CDMA)
+
+[variants.m4]
+MCOLS = 4
+MXU_E = 4
+TMEM_WORDS = 65536

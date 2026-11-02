@@ -1,0 +1,11 @@
+openTPU ZCU104 port
+Copyright 2026 John Bagshaw
+
+This product is a modified version of openTPU (https://github.com/FeSens/openTPU),
+Copyright 2026 the openTPU authors (Felipe Sens Bonetto and contributors),
+licensed under the Apache License, Version 2.0. It is based on openTPU commit 91df4109.
+It is an independent port, not made, reviewed or endorsed by the openTPU authors.
+
+The changes add the AMD ZCU104 port and the vendor-neutral netlist export. They are under
+the Apache License, Version 2.0. The new files are listed in docs/zcu104.md section 2.
+Each changed openTPU file says so in its first line.

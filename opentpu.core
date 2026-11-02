@@ -1,0 +1,104 @@
+CAPI=2:
+# openTPU's RTL for FuseSoC: one file set per layer, one target per build. The file lists follow
+# opentpu/target.py sources() (tests/test_zcu104.py checks they agree). The accelerator system
+# (otpu_native_sys) is vendor-neutral with the generic cells; a board adds its clocks, memory
+# controller and host link. tools/neutral/export.py writes the same system as one Verilog-2005
+# netlist (build/neutral/<target>/) for tools without a SystemVerilog front end.
+name: opentpu:opentpu:accelerator:0.1
+description: openTPU, an int8 transformer accelerator (one slice, D 128, MCOLS 4)
+
+filesets:
+  core:
+    file_type: systemVerilogSource
+    files:
+      - rtl/vpu/otpu_fp.sv
+      - rtl/vpu/otpu_fpipe.sv
+      - rtl/top/otpu_pkg.sv
+      - rtl/mem/otpu_tmem.sv
+      - rtl/mem/otpu_actram.sv
+      - rtl/seq/otpu_seq.sv
+      - rtl/vpu/otpu_vtree.sv
+      - rtl/dma/otpu_dma.sv
+      - rtl/mxu/otpu_mxu.sv
+  dsp_generic:
+    file_type: systemVerilogSource
+    files: [rtl/tech/generic/otpu_tech_dsp.sv]
+  dsp_xilinx7:
+    file_type: systemVerilogSource
+    files: [rtl/tech/xilinx7/otpu_tech_dsp.sv]
+  dsp_xilinxus:
+    file_type: systemVerilogSource
+    files: [rtl/tech/xilinxus/otpu_tech_dsp.sv]
+  ram_generic:
+    file_type: systemVerilogSource
+    files: [rtl/tech/generic/otpu_tech_ram.sv]
+  units:
+    file_type: systemVerilogSource
+    files:
+      - rtl/vpu/otpu_quant.sv
+      - rtl/vpu/otpu_se_comp.sv
+      - rtl/vpu/otpu_se_tail.sv
+      - rtl/vpu/otpu_vpu.sv
+      - rtl/top/otpu_coll.sv
+      - rtl/top/otpu_slice.sv
+  shell:
+    file_type: systemVerilogSource
+    files:
+      - rtl/shell/otpu_ctrl.sv
+      - rtl/shell/otpu_trace.sv
+      - rtl/shell/otpu_board.sv
+      - rtl/mem/otpu_native_dram.sv
+      - rtl/shell/otpu_afifo.sv
+      - rtl/shell/otpu_mem_ch.sv
+      - rtl/shell/otpu_axi_split2.sv
+      - rtl/boards/ypcb-00338/otpu_native_sys.sv
+  zcu104_rtl:
+    file_type: systemVerilogSource
+    files:
+      - rtl/boards/zcu104/otpu_mig_mux.sv
+      # the block design's cells (module references, Verilog-2001)
+      - rtl/boards/zcu104/otpu_zbd_tpu.v: {file_type: verilogSource}
+      - rtl/boards/zcu104/otpu_zbd_mux.v: {file_type: verilogSource}
+      - rtl/boards/zcu104/otpu_zbd_ddr4.v: {file_type: verilogSource}
+      - rtl/boards/zcu104/otpu_fpga_top_zcu104.sv
+  zcu104_xdc:
+    files:
+      - boards/zcu104/constraints/zcu104_pins.xdc: {file_type: xdc}
+  zcu104_tcl:
+    # sourced in this order while the project is created (edalize's vivado backend): the board
+    # part, the MIG's script, the block design's (which makes the MIG its cell ddr4 instantiates),
+    # then the hook that wraps the block design and adds the late constraints (the files below,
+    # copied with the core)
+    files:
+      - boards/zcu104/vivado/fusesoc_pre.tcl: {file_type: tclSource}
+      - boards/zcu104/vivado/mig.tcl: {file_type: tclSource}
+      - boards/zcu104/vivado/bd_zcu104.tcl: {file_type: tclSource}
+      - boards/zcu104/vivado/fusesoc_post.tcl: {file_type: tclSource}
+      - boards/zcu104/vivado/act_uram.xdc: {file_type: user}
+      - boards/zcu104/constraints/otpu_top_zcu104.tcl: {file_type: user}
+      - boards/ypcb-00338/constraints/otpu_mem_ch.tcl: {file_type: user}
+      - boards/ypcb-00338/constraints/otpu_clk2x.tcl: {file_type: user}
+
+targets:
+  default: &default
+    filesets: [core, dsp_generic, ram_generic, units, shell]
+    toplevel: otpu_native_sys
+
+  # the vendor-neutral system: lint with Verilator (5.046 or later)
+  lint:
+    <<: *default
+    default_tool: verilator
+    tools:
+      verilator:
+        mode: lint-only
+        verilator_options: [-Wno-fatal, -DSYNTHESIS]
+
+  # the ZCU104 bitstream (Vivado 2025.2; the parameters are targets/zcu104.toml's: the block
+  # design's cell tpu, otpu_zbd_tpu, has them as its defaults, ARCH_HASH included)
+  zcu104:
+    default_tool: vivado
+    filesets: [core, dsp_xilinxus, ram_generic, units, shell, zcu104_rtl, zcu104_xdc, zcu104_tcl]
+    toplevel: otpu_fpga_top_zcu104
+    tools:
+      vivado:
+        part: xczu7ev-ffvc1156-2-e
