@@ -84,11 +84,6 @@ python3 -m pytest tests/test_zcu104.py
 Output goes to `build/zcu104/`: `otpu.bit`, `otpu.bin`, `otpu_zcu104.xsa` and
 `reports/SUMMARY.txt`.
 
-## Limits
-
-- Not run on a board. The software on the Arm side (host runtime and DMA driver) is not written.
-- Random 0 or 1 power-up values for the registers with no reset are not tested.
-
 ## Licence
 
 Apache License 2.0, as openTPU. See [LICENSE](LICENSE) and [NOTICE](NOTICE).
