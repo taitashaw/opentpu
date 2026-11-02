@@ -4,11 +4,9 @@ A port of [openTPU](https://github.com/FeSens/openTPU), the open-source AI accel
 Felipe Sens Bonetto, to AMD's ZCU104 evaluation board (Zynq UltraScale+ XCZU7EV), built in
 Vivado 2025.2.
 
-Status: built, timed and simulated. Not run on a board yet.
-
 This repository holds only the port. It is an overlay on openTPU commit
-[91df4109](https://github.com/FeSens/openTPU/commit/91df4109): 27 new files and 4 changed
-openTPU files, each changed file marked on its first line. It is an independent port, not made,
+[91df4109](https://github.com/FeSens/openTPU/commit/91df4109): 27 new files, 3 screenshots and 4
+changed openTPU files, each changed file marked on its first line. It is an independent port, not made,
 reviewed or endorsed by the openTPU authors.
 
 ## What the port changes
@@ -56,8 +54,9 @@ met timing with +0.093 ns on the core clock. Details and the reports reviewed:
   openTPU's reference run byte for byte (3,932,160 bytes compared). XSim compiles the RTL with
   `SYNTHESIS` defined, which removes the RTL's simulation-only zero initializers, so registers
   with no reset start as X. The run needs those registers set to 0 at 1 ps, as the FPGA's INIT
-  does; without that, an arbiter grant in the scratchpad memory stays X and the run stops at
-  about 85 us. See docs/zcu104.md section 5.
+  does. Without that, the run never halts: with the reset pulse on (`TB_CTL_MRST`), two arbiter
+  grants in the scratchpad memory stay X and the run stops at about 85 us. See docs/zcu104.md
+  section 5.
 
 ![The whole openTPU demo in Vivado XSim](docs/images/xsim_full_run.webp)
 
