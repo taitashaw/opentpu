@@ -27,6 +27,12 @@ reviewed or endorsed by the openTPU authors.
   interface, so the controller comes in as a module reference too.
 - openTPU's accelerator logic is used unchanged.
 
+![Vivado IP integrator block design of the ZCU104 port](docs/images/block_design.png)
+
+*The block design: `tpu`, `merge` and `ddr4` (RTL module references) beside the Zynq UltraScale+
+processing system, the AXI SmartConnects `sc_ctl` and `sc_dma`, the AXI Central DMA, the System
+Management Wizard, the Clocking Wizard and two Processor System Resets.*
+
 ## Results (Vivado 2025.2, xczu7ev-ffvc1156-2-e)
 
 | Item | Value |
@@ -52,6 +58,18 @@ met timing with +0.093 ns on the core clock. Details and the reports reviewed:
   with no reset start as X. The run needs those registers set to 0 at 1 ps, as the FPGA's INIT
   does; without that, an arbiter grant in the scratchpad memory stays X and the run stops at
   about 85 us. See docs/zcu104.md section 5.
+
+![The whole openTPU demo in Vivado XSim](docs/images/xsim_full_run.webp)
+
+*The whole demo in Vivado XSim, unknown registers set to 0 at 1 ps. A: the host sets run (685 ns).
+B: the matrix unit's first compute cycle (86,195 ns, at the yellow cursor; C's label covers B's).
+C: halted (91,515 ns). Most of A to B is `u_dma` clearing 256 KiB of scratchpad. In the Objects
+pane, `ctl_mrst` is 0: the reset the testbench ties off.*
+
+![The start of the run in Vivado XSim](docs/images/xsim_run_start.webp)
+
+*About 0.1 to 1.5 us: the host's last register writes, `run` going high, the sequencer issuing the
+14 instructions and `u_dma` starting to read the memory model.*
 
 ## Use
 

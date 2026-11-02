@@ -1,5 +1,5 @@
 # ZCU104 (xczu7ev-ffvc1156-2-e): the top's board pins (otpu_fpga_top_zcu104). Locations and
-# standards from Vivado's board file (XilinxBoardStore zcu104/1.1 part0_pins.xml): CPU_RESET M11,
+# standards from AMD's ZCU104 board file in Vivado (XilinxBoardStore zcu104/1.1 part0_pins.xml): CPU_RESET M11,
 # GPIO_LED_0..3_LS D5 D6 A5 B5, all LVCMOS33 in bank 88. The SODIMM's pins and its 300 MHz
 # reference (CLK_300_P/N AH18/AH17) are the MIG's: its board-flow constraints place them.
 

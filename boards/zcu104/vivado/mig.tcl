@@ -1,4 +1,4 @@
-# The PL SODIMM's controller: AMD's DDR4 IP (MIG, PG150) as the ZCU104 board file presets it
+# The PL SODIMM's controller: AMD's DDR4 IP (MIG, PG150) as AMD's ZCU104 board file presets it
 # (XilinxBoardStore zcu104/1.1 preset.xml: SODIMM MTA8ATF51264HZ-2G1, 64 bits, tCK 938 ps =
 # DDR4-2133, 300 MHz input clock clk_300mhz), with its native user interface (no AXI): one
 # command a 512-bit beat in ui_clk (memory clock / 4, 266.5 MHz), what otpu_mig_mux drives.
